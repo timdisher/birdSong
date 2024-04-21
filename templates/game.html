@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Birdsong Guessing Game</title>
+</head>
+<body>
+    <h1>Guess the Bird</h1>
+    <audio id="birdsong" src="{{ audio_url }}" controls></audio>
+    <br>
+    <form action="/play" method="POST">
+        {% for bird in bird_names %}
+        <input type="radio" id="{{ bird }}" name="guess" value="{{ bird }}">
+        <label for="{{ bird }}">{{ bird }}</label><br>
+        {% endfor %}
+        <input type="hidden" name="correct_bird" value="{{ correct_bird }}">
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
