@@ -3,7 +3,7 @@ import random
 import requests
 from flask import Flask, render_template, request
 from dotenv import load_dotenv
-import pygame
+
 
 
 load_dotenv()
@@ -61,67 +61,23 @@ def get_xeno_canto_audio(common_name):
 
 def play_birdsong(common_name):
     audio_url = get_xeno_canto_audio(common_name)
-    
     if audio_url:
-        response = requests.get(audio_url)
-        if response.status_code == 200:
-            with open('birdsong.mp3', 'wb') as file:
-                file.write(response.content)
-            
-            pygame.mixer.init()
-            pygame.mixer.music.load('birdsong.mp3')
-            pygame.mixer.music.play()
-            
-            input("Press Enter when you're ready to continue...")
-            
-            pygame.mixer.music.stop()
-            pygame.mixer.quit()
-            os.remove('birdsong.mp3')
-        else:
-            print("Failed to download the birdsong audio.")
+        return audio_url
     else:
-        print("No suitable birdsong audio found.")
+        return None
 
 
-def play_game(latitude, longitude):
-    while True:
-        nearby_birds = get_nearby_birds(latitude, longitude)
-        if len(nearby_birds) < 4:
-            print("Not enough nearby birds found.")
-            return
 
-        selected_birds = random.sample(nearby_birds, 4)
-        correct_bird = None
-        while correct_bird is None:
-            correct_bird = random.choice(selected_birds)
-            print("Searching for audio recordings...")
-            audio_url = get_xeno_canto_audio(correct_bird)
-            if audio_url is None:
-                print("No suitable audio recordings found for the selected bird. Selecting a new set of birds.")
-                selected_birds = random.sample(nearby_birds, 4)
-                correct_bird = None
+def play_game():
+    nearby_birds = get_nearby_birds(latitude, longitude)
+    if len(nearby_birds) < 4:
+        return "Not enough nearby birds found."
+    selected_birds = random.sample(nearby_birds, 4)
+    correct_bird = random.choice(selected_birds)
+    audio_url = play_birdsong(correct_bird)
+    bird_names = [get_bird_info(bird) for bird in selected_birds]
+    return render_template('game.html', audio_url=audio_url, bird_names=bird_names, correct_bird=correct_bird)
 
-        bird_names = [get_bird_info(bird) for bird in selected_birds]
-
-        print("Listen to the birdsong and guess the bird from the options below:")
-        for i, bird in enumerate(bird_names, 1):
-            print(f"{i}. {bird}")
-
-        print("Downloading birdsong...")
-        play_birdsong(correct_bird)
-
-        guess = int(input("Enter the number of your guess: "))
-        if bird_names[guess - 1] == get_bird_info(correct_bird):
-            print("Congratulations! You guessed correctly.")
-        else:
-            print(f"Sorry, the correct answer was {get_bird_info(correct_bird)}.")
-
-        play_again = input("Do you want to play again? (y/n): ")
-        if play_again.lower() != 'y':
-            break
-
-    print("Thanks for playing!")
- #Hardcoded latitude and longitude for your region
 latitude = 44.679374
 longitude = -63.330239
 
